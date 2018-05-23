@@ -23,16 +23,7 @@ public class ApiAciton extends HttpServlet{
 		String prifex = "/api/";
 		String key = uri.substring(uri.indexOf(prifex)+prifex.length(), uri.length());
 		
-		System.out.println("uri:"+uri);
-		Enumeration<String> headerNames = req.getHeaderNames();
-		while (headerNames.hasMoreElements()) {
-			String tempkey = headerNames.nextElement();
-			System.out.println(tempkey+":"+ req.getHeader(tempkey));
-		}
-		
 		s2obj(key, req, resp);
-		
-		
 	}
 	
 	@SuppressWarnings("rawtypes")
