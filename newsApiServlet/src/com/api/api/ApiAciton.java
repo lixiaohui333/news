@@ -24,6 +24,7 @@ public class ApiAciton extends HttpServlet{
 		String key = uri.substring(uri.indexOf(prifex)+prifex.length(), uri.length());
 		
 		s2obj(key, req, resp);
+
 	}
 	
 	@SuppressWarnings("rawtypes")
