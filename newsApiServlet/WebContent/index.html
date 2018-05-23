@@ -1,0 +1,58 @@
+<!DOCTYPE HTML><html lang="en"><head>
+<meta charset="UTF-8">
+<title>术康V2.3 API Menu</title>
+</head>
+<body>
+<p>
+<h3>清单</H3>
+<p></p>
+<ul>
+<h5>header:</h5> token,channel(渠道),native(true,表示原生),ServerEdition(,dev,test开发环境),version(版本号)
+<br/>
+<br/>
+<!-- JS跳转:  redirect.share//分享  html5.ad//广告 -->
+
+<HR style="border:3 double #987cb9" width="100%" color=#000000 SIZE=3><br/>
+
+<li>H5-JS测试界面 <br/>
+<a target="_blank" href="/js.html">js.html</a></li><br/>
+
+<HR style="border:3 double #987cb9" width="100%" color=#000000 SIZE=3><br/>
+
+<li>定心丸商城主页  (couponType  1单品优惠券 2全店折扣)<br/>
+<a target="_blank" href="/api/api.dxw.shop">api.dxw.shop</a></li><br/>
+
+<li>优惠券详情<br/>
+<a target="_blank" href="/api/api.dxw.shop.couponDetail">api.dxw.shop.couponDetail</a></li><br/>
+
+<li>优惠券兑换  PUT: id<br/>
+<a target="_blank" href="/api/api.dxw.shop.couponDetail.exchange">api.dxw.shop.couponDetail.exchange</a></li><br/>
+
+
+<HR style="border:3 double #987cb9" width="100%" color=#000000 SIZE=3><br/>
+
+<li>我的优惠券-可使用 (status 1 2 未使用 3已使用 4已过期) (date_status 1即将过期的,0普通的)  GET请求 参数type=0<br/>
+<a target="_blank" href="/api/app.dxw.coupon/enable">app.dxw.coupon?type=0</a></li><br/>
+
+<li>我的优惠券-已使用  GET请求 参数type=1<br/>
+<a target="_blank" href="/api/app.dxw.coupon/used">app.dxw.coupon?type=1</a></li><br/>
+
+<li>我的优惠券-已过期  GET请求 参数type=2<br/>
+<a target="_blank" href="/api/app.dxw.coupon/unable">app.dxw.coupon?type=2</a></li><br/>
+
+
+<li>兑换优惠券  PUT请求 参数code=abcderf<br/>
+<a target="_blank" href="/api/app.dxw.exchange">app.dxw.exchange</a></li><br/>
+
+<HR style="border:3 double #987cb9" width="100%" color=#000000 SIZE=3><br/>
+<li>检查获取的优惠券  GET请求 <br/>
+<a target="_blank" href="/api/app.dxw.coupon.check">app.dxw.coupon.check</a></li><br/>
+
+<HR style="border:3 double #987cb9" width="100%" color=#000000 SIZE=3><br/>
+
+<li>推荐给朋友  GET请求 <br/>
+<a target="_blank" href="/js.html">app.profile.recommend</a></li><br/>
+
+
+</ul>
+</body></html>

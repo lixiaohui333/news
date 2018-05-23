@@ -1,0 +1,487 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=0" />
+		<meta content="no" name="apple-touch-fullscreen">
+		<title></title>
+		<link rel="stylesheet" href="../css/common.css"/>
+		<!--<script type="text/javascript" src="../js/zepto.js"></script>-->
+		<!--<script type="text/javascript" src="../js/Html5communicateApp.js"></script>-->
+		<script type="text/javascript">
+		(function(exports){
+	if(!("console" in exports)){
+		exports["console"] = {
+			log  : function(){},
+			debug: function(){}
+		}
+	}
+
+	var
+		flag = "from=app",
+		query = location.search.toLowerCase()
+
+	;
+	exports.bApp = query.indexOf(flag) > -1;
+
+})(this);
+
+// HTML5 communication App
+(function(exports, appName, undefined){
+
+	var app,
+
+		Html5CallBack,
+
+		// android
+		androidInterface = exports.MobileJavascriptInterface,
+		// ios
+		connectWebViewJavascriptBridge
+	;
+
+	Html5CallBack = exports["Html5CallBack"] = {};
+
+	connectWebViewJavascriptBridge = function (callback) {
+
+		if (window.WebViewJavascriptBridge) {
+			callback(WebViewJavascriptBridge)
+		} else {
+			document.addEventListener('WebViewJavascriptBridgeReady', function() {
+				callback(WebViewJavascriptBridge)
+			}, false)
+		}
+	};
+
+	app = {
+
+		blogId : (document.getElementById("blogId") || {}).value,
+
+		registerAppEvent: function(fName, fn){
+			Html5CallBack[fName] = fn;
+			// ios 通过同样方式调用!
+			/*
+			 connectWebViewJavascriptBridge(function(bridge){
+			 bridge.init();
+			 });
+			 */
+		},
+
+		appInterfaceNameStore: {},
+
+		confCallApp: function(onf, callFnName){
+			var callNs,
+				appInterfaceNameStore = this.appInterfaceNameStore,
+
+				isIOS
+			;
+
+			// for ios
+			if(undefined === androidInterface){
+				isIOS = true;
+			}
+
+			callFnName = callFnName || "callApp";
+
+			callNs = app[callFnName];
+
+			callNs || (app[callFnName] = function(appInterfaceName, arg){
+				var fn,
+					args = Array.prototype.slice.call(arguments)
+				;
+
+				fn = appInterfaceNameStore[appInterfaceName];
+
+				"function"=== typeof  fn && fn.apply(this, args.slice(1));
+			});
+
+			for(var prop in onf){
+				if(!onf.hasOwnProperty(prop)){ continue }
+
+				if(isIOS){
+					appInterfaceNameStore[prop] = (function(prop){
+
+						var argTrans = onf[prop].split(",");
+
+						return function(arg){
+							var realArg;
+							console.debug("interFaceName: " + prop + "; 参数值: " + (Array.prototype.slice.call(arguments).join(",")));
+							// 最初版 ios
+//								alert("interFaceName: " + prop + "; 参数键: " + paramName + "; 参数值: " + arg);
+//								return;
+//								document.location = "objc://" + prop + ":/?" + paramName + "=" + arg;
+
+							// 使用 connectWebViewJavascriptBridge
+							if(argTrans.length > 1){
+								realArg = {};
+								arg = Array.prototype.slice.call(arguments);
+								for(var i = 0, len = arg.length; i < len; i++){
+									realArg[argTrans[i]] = arg[i];
+								}
+
+							}else{
+								realArg = arg;
+							}
+
+							connectWebViewJavascriptBridge(function(bridge){
+								bridge.callHandler(prop, realArg, function(response) { });
+							});
+						}
+					})(prop);
+
+				}else{
+					appInterfaceNameStore[prop] = (function(prop){
+						return function(){
+							var args = Array.prototype.slice.call(arguments);
+							androidInterface[prop].apply(androidInterface, args);
+						}
+					})(prop);
+				}
+
+			}
+
+		}
+	};
+
+	appName = appName || "dailyApp";
+
+	exports[appName] = app;
+
+})(this, "_App");
+
+(function(_app){
+
+	// 注册 清除状态
+	_app.registerAppEvent("clearPlayingStatus", function(){
+		clearTimeout(_app.promiseMinish);
+		$(".d-audio-active").each(function(){
+			this.activePlay = false;
+			this.setAttribute("data-last-time", this.__lastTime);
+		}).removeClass("d-audio-active");
+	});
+
+	// 配置 公有的调用 App
+	_app.confCallApp({
+
+		// 默认链接
+		IntentWebInterface           : "blogUrl",
+
+		// 跳转评论列表
+		IntentCommentListInterface   : "id,type",
+
+		// 播放音频
+		IntentPlayAudioInterface     : "audioUrl",
+
+		// 停止音频
+		IntentStopAudioInterface     : "audioUrl",
+
+		// 跳转到访客页面
+		IntentUserInfoInterface      : "userId",
+
+		// 浏览器图片
+		IntentGalleryInterface       : "json",
+
+		// 跳转每日详情
+		IntentBlogInterface          : "blogUrl,blogId",
+
+		// 跳转话题详情
+		IntentTopicDetailInterface   : "topicId",
+
+		// 圈子
+		IntentSocialInterface        : "blogUrl,blogId",
+
+		// 跳转 商家详情, 美食详情 和 时尚详情
+		// type 为 1 为美食, 则为时尚
+		IntentBusinessDetailInterface: "type,businessId",
+		
+		// 全站活动报名
+		IntentSignupActivityInterface        : "activity_id",
+		
+		// 关闭当前窗口
+		IntentCloseInterface        : "",
+		
+		// 分享
+		IntentShareInterface        : "title,content,url,thumb",
+		
+		//优惠券链接
+		IntentCouponInterface       : "couponId",
+
+		//跳转链接
+		IntentRedirectInterface       : "json",
+		
+		//日历
+		IntentSetDateTimeInterface    : "json"
+
+	});
+
+	// 扩展 嗅探 详情 Url
+	_app.detectDetailUrl =  (function(){
+		var arrCircleId;
+
+		arrCircleId = [
+			{
+				name: "lady",
+				id  : 1
+			},
+			{
+				name: "delicious",
+				id  : 2
+			},
+			{
+				name: "leisure",
+				id  : 3
+			}
+		];
+
+		return function(sUrl){
+			detectUrl: {
+
+				if(isMobileUrl(sUrl)){
+					break detectUrl;
+				}
+
+				if(isCircleTopicUrl(sUrl)){
+					break detectUrl;
+				}
+
+				if(isBlogDetailUrl(sUrl)){
+					break detectUrl;
+				}
+
+				if(isCircleUrl(sUrl)){
+					break detectUrl;
+				}
+
+				if(isMerchantUrl(sUrl)){
+					break detectUrl;
+				}
+				
+				if(isUserCenterUrl(sUrl)){
+					break detectUrl;
+				}
+				
+				if(isSignupActivityUrl(sUrl)){
+					break detectUrl;
+				}
+				
+				if(isCouponUrl(sUrl)){
+					break detectUrl;
+				}
+
+				_app.callApp("IntentWebInterface", sUrl);
+
+			}
+		};
+
+		function isMobileUrl(sUrl){
+			var
+				r = /(blog|topic)\/info\/\?id=(\d+)/.exec(sUrl),
+				bUrl
+			;
+
+			if(r){
+				_app.callApp("topic" === r[1] ? "IntentTopicDetailInterface" : "IntentBlogInterface", r[2]);
+				bUrl = true;
+			}
+
+			return bUrl;
+		}
+
+		// 圈子话题 url
+		function isCircleTopicUrl(url){
+			var
+				item,
+				len,
+				rMatched,
+				bUrl
+				;
+
+			url = url.replace("://", "");
+
+			len = arrCircleId.length;
+
+			while(len--){
+				item = arrCircleId[len];
+				rMatched = getCircleTopicReg(item.name).exec(url);
+				if(!rMatched){ continue }
+
+				bUrl = true;
+				_app.callApp("IntentTopicDetailInterface", rMatched[2]);
+				break;
+			}
+
+			return bUrl;
+		}
+
+		// 圈子 url
+		function isCircleUrl(url){
+			var
+				item,
+				len,
+				rMatched,
+				bUrl
+				;
+
+			url = url.replace("://", "");
+
+			len = arrCircleId.length;
+
+			while(len--){
+				item = arrCircleId[len];
+				rMatched = getCircleReg(item.name).exec(url);
+				if(!rMatched){ continue; }
+
+				bUrl = true;
+				_app.callApp("IntentSocialInterface", item.id, " ");
+				break;
+			}
+
+			return bUrl;
+		}
+
+		// 获取圈子话题 正则
+		function getCircleTopicReg(circleId){
+			return new RegExp("^[^\\/]+\\/#!\\/(" + circleId + ")\\/(\\d+)");
+		}
+
+		// 获取圈子 正则
+		function getCircleReg(circleId){
+			return new RegExp("^[^\\/]+\\/#!\\/(" + circleId + ")\\/?$");
+		}
+
+		// 每日详情 url
+		function isBlogDetailUrl(url){
+			var
+				bUrl,
+				r,
+				len,
+				rMatched
+				;
+
+			url = url.replace("://", "");
+
+			r = [
+				// /daily/:blogId
+				/^[^\/]+\/#!\/daily\/(\d+)\/?/,
+
+				// /daily/tag:tagId/:blogId
+				/^[^\/]+\/#!\/daily\/tag\d+\/(\d+)\/?/,
+
+				// /daily/_:dailyId/special:specialId/:blogId
+				/^[^\/]+\/#!\/daily\/_[^\/]+\/special\d+\/(\d+)\/?/,
+
+				// /daily/special:specialId/:blogId
+				/^[^\/]+\/#!\/daily\/special\d+\/(\d+)\/?/,
+
+				// /daily/_:dailyId/:blogId
+				/^[^\/]+\/#!\/daily\/_[^\/]\/(\d+)\/?/
+			];
+
+			len = r.length;
+
+			while(len--){
+				rMatched = r[len].exec(url);
+				if(!rMatched){ continue }
+
+				bUrl = true;
+				_app.callApp("IntentBlogInterface", " ", rMatched[1]);
+			}
+
+
+			return bUrl;
+		}
+
+		// 商家 url
+		function isMerchantUrl(sUrl){
+			var
+				bUrl,
+				r,
+				rMatched
+			;
+
+			sUrl = sUrl.replace("://", "");
+
+			r = /^[^\/]+\/shop\/(\d+)\/?/;
+			rMatched = r.exec(sUrl);
+
+			if(rMatched){
+				bUrl = true;
+				$.get("/life/shop/shoptype", {
+					id: rMatched[1]
+				}, function(data){
+					data = data || {};
+					if(1 !== data.status){ return }
+
+					_app.callApp("IntentBusinessDetailInterface", "food" === data.info ? 1 : 2, rMatched[1]);
+				});
+			}
+
+			return bUrl;
+		}
+		
+		// 用户中心 url
+		function isUserCenterUrl(sUrl){
+			var
+				bUrl,
+				r,
+				rMatched;
+
+
+			r = /home\/\w+?\/([\d]*)/;
+			rMatched = r.exec(sUrl);
+			if(rMatched){
+				bUrl = true;
+				userId=rMatched[1] ; 
+				_app.callApp("IntentUserInfoInterface", userId);
+			}
+
+			return bUrl;
+		}
+		
+		// 全站活动 url
+		function isSignupActivityUrl(sUrl){
+			var
+				bUrl,
+				r,
+				rMatched;
+
+			r = /activity\/activity\_sign\_up\?activity\_id\=([\d]*)/;
+			rMatched = r.exec(sUrl);
+			if(rMatched){
+				bUrl = true;
+				activity_id=rMatched[1] ;
+				_app.callApp("IntentSignupActivityInterface", activity_id);
+			}
+
+			return bUrl;
+		}
+		
+		// 优惠券 url
+		function isCouponUrl(sUrl){
+			var
+				bUrl,
+				r,
+				rMatched;
+
+			r = /coupon\/([\d]*)/;
+			rMatched = r.exec(sUrl);
+			if(rMatched){
+				bUrl = true;
+				couponId = rMatched[1] ; 
+				_app.callApp("IntentCouponInterface", couponId);
+			}
+
+			return bUrl;
+		}
+		
+
+	})();
+
+})(this._App);
+		</script>
+	</head>
+	<body>
+		<a href="tel:15828413995">15828413995</a>
+		<a style="width:200px;height:100px;text-align: center;color:#fff;background: blueviolet;display: block;cursor: pointer" onclick="_App.callApp('IntentSetDateTimeInterface','呵呵');">分享</a>
+	</body>
+</html>

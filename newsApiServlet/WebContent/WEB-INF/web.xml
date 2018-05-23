@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	id="WebApp_ID" version="3.0">
+	<description>Servlet and JSP Examples.</description>
+	<display-name>Servlet and JSP Examples</display-name>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>*.html</url-pattern>
+	</servlet-mapping>
+	
+	
+	<servlet>
+		<servlet-name>BaseOK</servlet-name>
+		<servlet-class>com.api.api.BaseOK</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>BaseOK</servlet-name>
+		<url-pattern>/baseOK/*</url-pattern>
+	</servlet-mapping>
+	
+	
+	
+	
+	<servlet>
+		<servlet-name>Upload</servlet-name>
+		<servlet-class>com.api.api.UploadServlet2</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Upload</servlet-name>
+		<url-pattern>/Upload</url-pattern>
+	</servlet-mapping>
+	
+	
+	
+	<servlet>
+		<servlet-name>ApiAciton</servlet-name>
+		<servlet-class>com.api.api.ApiAciton</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ApiAciton</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>*.ico</url-pattern>
+	</servlet-mapping>
+</web-app>

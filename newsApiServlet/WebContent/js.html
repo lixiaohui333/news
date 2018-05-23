@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=0" />
+		<meta content="no" name="apple-touch-fullscreen">
+		<title></title>
+		<link rel="stylesheet" href="../css/common.css"/>
+			<script type="text/javascript">
+				(function(exports){
+					if(!("console" in exports)){
+						exports["console"] = {
+							log  : function(){},
+							debug: function(){}
+						}
+					}
+					var flag = "from=app",
+						query = location.search.toLowerCase();
+					exports.bApp = query.indexOf(flag) > -1;
+				
+				})(this);
+			// HTML5 communication App
+			(function(exports, appName, undefined){
+			
+				var app,
+					Html5CallBack,
+					// android
+					androidInterface = exports.MobileJavascriptInterface,
+					// ios
+					connectWebViewJavascriptBridge;
+			
+				Html5CallBack = exports["Html5CallBack"] = {};
+			
+				connectWebViewJavascriptBridge = function (callback) {
+			
+					if (window.WebViewJavascriptBridge) {
+						callback(WebViewJavascriptBridge)
+					} else {
+						document.addEventListener('WebViewJavascriptBridgeReady', function() {
+							callback(WebViewJavascriptBridge)
+						}, false)
+					}
+				};
+			
+				app = {
+					blogId : (document.getElementById("blogId") || {}).value,
+			
+					registerAppEvent: function(fName, fn){
+						Html5CallBack[fName] = fn;
+					},
+			
+					appInterfaceNameStore: {},
+			
+					confCallApp: function(onf, callFnName){
+						var callNs,
+							appInterfaceNameStore = this.appInterfaceNameStore,
+			
+							isIOS;
+							
+						// for ios
+						if(undefined === androidInterface){
+							isIOS = true;
+						}
+			
+						callFnName = callFnName || "callApp";
+			
+						callNs = app[callFnName];
+			
+						callNs || (app[callFnName] = function(appInterfaceName, arg){
+							var fn,
+								args = Array.prototype.slice.call(arguments);
+			
+							fn = appInterfaceNameStore[appInterfaceName];
+			
+							"function"=== typeof  fn && fn.apply(this, args.slice(1));
+						});
+			
+						for(var prop in onf){
+							if(!onf.hasOwnProperty(prop)){ continue }
+			
+							if(isIOS){
+								appInterfaceNameStore[prop] = (function(prop){
+			
+									var argTrans = onf[prop].split(",");
+			
+									return function(arg){
+										var realArg;
+										console.debug("interFaceName: " + prop + "; 参数值: " + (Array.prototype.slice.call(arguments).join(",")));
+			
+										// 使用 connectWebViewJavascriptBridge
+										if(argTrans.length > 1){
+											realArg = {};
+											arg = Array.prototype.slice.call(arguments);
+											for(var i = 0, len = arg.length; i < len; i++){
+												realArg[argTrans[i]] = arg[i];
+											}
+			
+										}else{
+											realArg = arg;
+										}
+										connectWebViewJavascriptBridge(function(bridge){
+											bridge.callHandler(prop, realArg, function(response) { });
+										});
+									}
+								})(prop);
+			
+							}else{
+								appInterfaceNameStore[prop] = (function(prop){
+									return function(){
+										var args = Array.prototype.slice.call(arguments);
+										androidInterface[prop].apply(androidInterface, args);
+									}
+								})(prop);
+							}
+			
+						}
+			
+					}
+				};
+			
+				appName = appName || "dailyApp";
+			
+				exports[appName] = app;
+			
+			})(this, "_App");
+			
+			(function(_app){
+			
+				// 注册 清除状态
+				_app.registerAppEvent("clearPlayingStatus", function(){
+					clearTimeout(_app.promiseMinish);
+					$(".d-audio-active").each(function(){
+						this.activePlay = false;
+						this.setAttribute("data-last-time", this.__lastTime);
+					}).removeClass("d-audio-active");
+				});
+			
+				// 配置 公有的调用 App
+				_app.confCallApp({		
+					//分享
+					IntentRedirectInterface    : "json",
+					//电话
+					IntentSetTelInterface         : "telNum"
+				});
+			
+			})(this._App);
+			var param = "{\"rel\":\"html.js.call\",\"tel\":{\"mobile\":\"15828380434\",\"date\":\"9:00-12:00\",\"name\":\"同仁堂大药店\"}}";
+			var param_share = "{\"rel\":\"html.js.share\",\"share\":{\"title\":\"术康\",\"desc\":\"详情\",\"url\":\"http://www.postop.cn/index.html\",\"picUrl\":\"http://www.postop.cn/style/images/logo.png\"}}";
+			var param_coupon = "{\"rel\":\"api.html5.couponDetail\",\"text\":\"优惠详情\",\"href\":\"http://www.baidu.com\"}";
+			var param_qr = "{\"rel\":\"html.js.qr\",\"image\":{\"src\":\"http://pic.nipic.com/2007-11-09/2007119122519868_2.jpg\"}}";
+			var param_share_friend = "{\"rel\":\"html.js.shareFriend\",\"share\":{\"title\":\"术康\",\"desc\":\"详情\",\"url\":\"http://www.postop.cn/index.html\",\"picUrl\":\"http://www.postop.cn/style/images/logo.png\"}}";
+		</script>
+	</head>
+	<body>
+		<a href="javascript:;" style="text-decoration:underline;display:block;" onclick="_App.callApp('IntentRedirectInterface',param);">点击拨号 html.js.call</a>
+		<br>
+		<a href="javascript:;" style="text-decoration:underline;display:block;" onclick="_App.callApp('IntentRedirectInterface',param_share);">普通去分享 html.js.share</a>
+		<br>
+		<a href="javascript:;" style="text-decoration:underline;display:block;" onclick="_App.callApp('IntentRedirectInterface',param_share_friend);">推荐朋友去分享,成功后调用服务器接口,获取定心丸 html.js.shareFriend</a>
+		<br>
+		<a href="javascript:;" style="text-decoration:underline;display:block;" onclick="_App.callApp('IntentRedirectInterface',param_coupon);">我的优惠券详情 api.html5.couponDetail</a>
+		<br>
+		<a href="javascript:;" style="text-decoration:underline;display:block;" onclick="_App.callApp('IntentRedirectInterface',param_qr);">我的二维码弹窗 html.js.qr</a>
+	</body>
+</html>
