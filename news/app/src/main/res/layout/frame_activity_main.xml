@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    >
+
+    <include layout="@layout/frame_include_title_red" />
+
+
+    <FrameLayout
+        android:id="@+id/fl_frame"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        />
+
+    <RadioGroup
+        android:id="@+id/rg_main"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal"
+        >
+
+        <RadioButton
+            android:id="@+id/rb_interview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:checked="true"
+            android:drawableTop="@drawable/global_tab"
+            android:gravity="center"
+            android:text="首页"
+
+            />
+
+        <RadioButton
+            android:id="@+id/rb_block"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:drawableTop="@drawable/trend_tab"
+            android:gravity="center"
+            android:text="四川省情"
+            android:textColor="@color/color_text_333"
+            />
+
+        <RadioButton
+            android:id="@+id/rb_msg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:drawableTop="@drawable/global_tab"
+            android:gravity="center"
+            android:text="数说天下"
+            android:textColor="@color/color_text_333"
+            />
+
+        <RadioButton
+            android:id="@+id/rb_profile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:button="@null"
+            android:drawableTop="@drawable/exchange_intro_tab"
+            android:gravity="center"
+            android:text="我的"
+            android:textColor="@color/color_text_333"
+            />
+    </RadioGroup>
+
+
+</LinearLayout>
+
